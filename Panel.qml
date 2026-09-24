@@ -330,17 +330,9 @@ Panel {
     if (!listProcess.running) listProcess.running = true
   }
 
-  BarIconButton {
-    id: button
-    anchors.fill: parent
-    bar: root.bar
-    text: "⌨"
-    onPressed: function(mouseButton) { if (mouseButton === Qt.LeftButton) root.toggle() }
-  }
-
   KeyboardPanel {
     id: panel
-    anchorItem: button
+    anchorItem: root.anchorItem
     owner: root.barIdentity
     bar: root.bar
     open: root.opened
