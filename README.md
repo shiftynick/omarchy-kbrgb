@@ -8,12 +8,12 @@ A native Omarchy bar widget for the [`kbrgb`](https://github.com/shwetankg07/kbr
 - `kbrgb` installed and available as `kbrgb` in `PATH`
 - A keyboard/controller supported by `kbrgb`
 
-The plugin only runs `kbrgb` commands and reads their output. It does not use `sudo`, shell interpolation, or a second Quickshell process.
+The plugin only runs `kbrgb` commands and reads their output. It requests no elevated privileges and performs no shell interpolation, and it has no second Quickshell process.
 
 ## Install from a Git repository
 
 ```bash
-omarchy plugin add https://github.com/<owner>/<repository>.git --enable
+omarchy plugin add https://github.com/shiftynick/omarchy-kbrgb.git --enable
 ```
 
 The repository must be public for Marketplace installation. Omarchy clones it, validates `manifest.json`, and installs it under `~/.config/omarchy/plugins/<plugin-id>/`.
