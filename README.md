@@ -49,6 +49,8 @@ The panel provides:
 
 The command preview shows the exact argument array that will be sent to `kbrgb`. Effects are discovered at runtime; the color controls are shown only when the selected effect supports a color argument.
 
+Theme colors are resolved by the plugin itself: it reads the active theme's `$HOME/.local/state/omarchy/current/theme/colors.toml` and applies the accent colors it finds as per-zone static colors (`kbrgb C1 C2 C3 C4`). This keeps the panel independent of `kbrgb`'s own theme lookup path.
+
 ## Development and tests
 
 Run the model tests and the source-contract test from the repository root:

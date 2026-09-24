@@ -98,7 +98,21 @@ assert.deepEqual(Model.offCommand(0), {
   period: null,
   args: []
 });
-assert.deepEqual(Model.themeCommand(75), {
+assert.deepEqual(Model.themeCommand(['aa11ff', 'bb22ff', 'cc33ff', 'dd44ff'], 75), {
+  command: ['kbrgb', '-b', '75', 'aa11ff', 'bb22ff', 'cc33ff', 'dd44ff'],
+  effect: 'theme',
+  brightness: 75,
+  period: null,
+  args: ['aa11ff', 'bb22ff', 'cc33ff', 'dd44ff']
+});
+assert.deepEqual(Model.themeCommand(['aa11ff', '#bb22ff', 'cc33ff', 'dd44ff'], 100), {
+  command: ['kbrgb', 'aa11ff', 'bb22ff', 'cc33ff', 'dd44ff'],
+  effect: 'theme',
+  brightness: 100,
+  period: null,
+  args: ['aa11ff', 'bb22ff', 'cc33ff', 'dd44ff']
+});
+assert.deepEqual(Model.themeCommand([], 75), {
   command: ['kbrgb', '-b', '75', 'theme'],
   effect: 'theme',
   brightness: 75,
@@ -160,5 +174,27 @@ assert.equal(Model.effectDescription('unknown-effect'), '');
 assert.equal(Model.filterEffects(['breathe', 'rainbow', 'wave'], 'av').join(','), 'wave');
 assert.equal(Model.filterEffects(['breathe', 'rainbow', 'wave'], 'native/').length, 0);
 assert.deepEqual(Model.filterEffects(['native/breathe', 'native/wave'], 'wave'), ['native/wave']);
+
+const tokyoNightToml = [
+  'mode = "dark"',
+  'accent = "#7aa2f7"',
+  'red = "#f7768e"',
+  'green = "#9ece6a"',
+  'yellow = "#e0af68"',
+  'black = "#1a1b26"',
+  'color4 = "#f7768e"',
+  'color5 = "#e0af68"',
+  'color6 = "#9ece6a"',
+  'color10 = "#ffcf69"',
+  'color13 = "#ffd500"'
+].join('\n');
+assert.deepEqual(Model.parseThemeToml(tokyoNightToml), ['7aa2f7', 'f7768e', 'e0af68', '9ece6a']);
+assert.deepEqual(Model.parseThemeToml('accent = "#7aa2f7"\nred = "#111111"\n'), ['7aa2f7', '7aa2f7', '7aa2f7', '7aa2f7']);
+assert.deepEqual(Model.parseThemeToml('accent = "#aaaaaa"\ncolor4 = "#aaaaaa"\n'), ['aaaaaa', 'aaaaaa', 'aaaaaa', 'aaaaaa']);
+assert.deepEqual(Model.parseThemeToml('mode = "dark"\nfoo = "bar"\n'), []);
+assert.deepEqual(Model.parseThemeToml('# not toml'), []);
+assert.deepEqual(Model.parseThemeToml(''), []);
+
+console.log('model.test.js: all assertions passed');
 
 console.log('KbrgbModel tests passed');

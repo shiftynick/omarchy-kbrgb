@@ -103,6 +103,43 @@ const EFFECT_COLOR_LIMITS = {
 
 const EFFECT_NAMES = Object.keys(EFFECT_COLOR_LIMITS);
 
+const THEME_ACCENT_ORDER = [
+  "accent", "color4", "color1", "color5", "color2", "color3",
+  "color6", "color9", "color10", "color11", "color12", "color13"
+];
+
+// Mirrors kbrgb-theme's colors.toml resolution (theme_colors) so the panel can
+// paint zone colors itself instead of depending on kbrgb's own theme lookup,
+// which targets a stale Omarchy path.
+function isColorfulHex(hex) {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return false;
+  return Math.max(rgb.red, rgb.green, rgb.blue) - Math.min(rgb.red, rgb.green, rgb.blue) >= 40;
+}
+
+function parseThemeToml(text) {
+  const raw = {};
+  String(text || "").split(/\r?\n/).forEach(function(line) {
+    const match = line.match(/^\s*([A-Za-z0-9_]+)\s*=\s*"?#?([0-9A-Fa-f]{6})"?\s*$/);
+    if (match) raw[match[1]] = match[2];
+  });
+  const ordered = [];
+  THEME_ACCENT_ORDER.forEach(function(key) {
+    const value = normalizeHex(raw[key]);
+    if (value && ordered.indexOf(value) === -1) ordered.push(value);
+  });
+  const found = [];
+  ordered.forEach(function(hex) {
+    if (isColorfulHex(hex) && found.indexOf(hex) === -1) found.push(hex);
+  });
+  ordered.forEach(function(hex) {
+    if (found.indexOf(hex) === -1) found.push(hex);
+  });
+  if (found.length === 0) return [];
+  while (found.length < 4) found.push(found[found.length - 1]);
+  return found.slice(0, 4);
+}
+
 function clamp(value, minimum, maximum) {
   const number = Number(value);
   if (!isFinite(number)) return minimum;
@@ -341,7 +378,19 @@ function offCommand() {
   return { command: ["kbrgb", "off"], effect: "off", brightness: 0, period: null, args: [] };
 }
 
-function themeCommand(brightness) {
+function themeCommand(colors, brightness) {
+  const normalized = (colors || []).map(normalizeHex).filter(Boolean);
+  if (normalized.length === 4) {
+    const command = ["kbrgb"];
+    if (Number(brightness) !== 100) command.push("-b", String(Math.round(clamp(brightness, 0, 100))));
+    return {
+      command: command.concat(normalized),
+      effect: "theme",
+      brightness: clamp(brightness, 0, 100),
+      period: null,
+      args: normalized
+    };
+  }
   return makeRequest("theme", brightness, null, [], false);
 }
 
@@ -394,6 +443,7 @@ const api = {
   emptyState,
   parseSavedState,
   parseStatus,
+  parseThemeToml,
   effectCommand,
   effectCommandWithReverse,
   staticCommand,

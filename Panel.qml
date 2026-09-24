@@ -34,6 +34,11 @@ Panel {
   property string selectedColor: "aa11ff"
   property var effectRows: []
 
+  property string homeDir: ""
+  property string themeColorsFile: ""
+  property var themeColors: []
+  property bool themeColorsLoaded: false
+
   readonly property var nativeEffects: ["native/breathe", "native/neon", "native/wave", "native/zoom", "native/meteor", "native/twinkle"]
   readonly property var allEffects: ["theme", "static", "off"].concat(effectRows).concat(nativeEffects)
   readonly property bool colorEnabled: effect === "static" || Model.effectAcceptsColor(effect)
@@ -73,7 +78,7 @@ Panel {
     var speed = periodValue === null || periodValue === undefined ? 3 : Number(periodValue)
     if (value === "off") return Model.offCommand()
     if (value === "static") return Model.staticCommandWithReverse(colorValue || selectedColor, bright, reverse)
-    if (value === "theme") return Model.themeCommand(bright)
+    if (value === "theme") return Model.themeCommand(themeColors, bright)
     if (value.indexOf("native/") === 0) return Model.nativeCommandWithReverse(value, bright, speed, colorValue || selectedColor, reverse)
     if (effectColorLimit(value) > 0) return Model.effectCommandWithReverse(value, bright, speed, colorValue || selectedColor, reverse)
     return Model.effectCommandWithReverse(value, bright, speed, null, reverse)
@@ -94,6 +99,13 @@ Panel {
         var colors = saved.args.filter(function(c) { return Model.normalizeHex(c) })
         if (colors.length > 0) selectedColor = Model.normalizeHex(colors[0])
       }
+      if (themeColorsLoaded && saved.args.length === 4) {
+        var matches = true
+        for (var i = 0; i < 4; i++) {
+          if (Model.normalizeHex(saved.args[i]) !== themeColors[i]) { matches = false; break }
+        }
+        if (matches) effect = "theme"
+      }
     }
     if (parsed.device) {
       statusMessage = "Ready · " + parsed.device
@@ -107,7 +119,15 @@ Panel {
 
   function refreshStatus() {
     if (statusProcess.running) return
+    root.loadThemeColors()
     statusProcess.running = true
+  }
+
+  function loadThemeColors() {
+    if (themeColorsFile === "") return
+    if (themeColorsProcess.running) return
+    themeColorsProcess.command = ["cat", themeColorsFile]
+    themeColorsProcess.running = true
   }
 
   function statusOnExit(code) {
@@ -142,7 +162,7 @@ Panel {
   function currentRequest() {
     if (isOff) return Model.offCommand()
     if (effect === "static") return Model.staticCommandWithReverse(selectedColor, brightness, reverse)
-    if (effect === "theme") return Model.themeCommand(brightness)
+    if (effect === "theme") return Model.themeCommand(themeColors, brightness)
     if (isNative) return Model.nativeCommandWithReverse(effect, brightness, displayPeriod, selectedColor, reverse)
     if (effectColorLimit(effect) > 0) return Model.effectCommandWithReverse(effect, brightness, displayPeriod, selectedColor, reverse)
     return Model.effectCommandWithReverse(effect, brightness, displayPeriod, null, reverse)
@@ -157,7 +177,7 @@ Panel {
   function toggleLighting() {
     runCommand(isOff ? Model.staticCommandWithReverse(selectedColor, brightness, reverse).command : Model.offCommand().command)
   }
-  function applyTheme() { runCommand(Model.themeCommand(brightness).command) }
+  function applyTheme() { runCommand(Model.themeCommand(themeColors, brightness).command) }
   function refresh() { refreshStatus(); refreshEffectList() }
   function setCenterHoverRevealSuppressed(value) {
     if (root.bar && typeof root.bar.setCenterHoverRevealSuppressed === "function")
@@ -244,6 +264,7 @@ Panel {
   Component.onCompleted: {
     effectRows = []
     refreshEffectList()
+    if (!homeProcess.running) homeProcess.running = true
     refreshStatus()
   }
 
@@ -277,6 +298,32 @@ Panel {
     stdout: StdioCollector { id: actionStdout; waitForEnd: true }
     stderr: StdioCollector { id: actionStderr; waitForEnd: true }
     onExited: function(exitCode, exitStatus) { root.setStatusFromProcess(exitCode, actionStdout.text, actionStderr.text) }
+  }
+
+  Process {
+    id: homeProcess
+    running: false
+    command: ["printenv", "HOME"]
+    stdout: StdioCollector { id: homeStdout; waitForEnd: true }
+    onExited: function(exitCode, exitStatus) {
+      if (exitCode !== 0) return
+      var home = String(homeStdout.text || "").trim()
+      if (home === "") return
+      root.homeDir = home
+      root.themeColorsFile = home + "/.local/state/omarchy/current/theme/colors.toml"
+      root.loadThemeColors()
+    }
+  }
+
+  Process {
+    id: themeColorsProcess
+    running: false
+    command: []
+    stdout: StdioCollector { id: themeColorsStdout; waitForEnd: true }
+    onExited: function(exitCode, exitStatus) {
+      root.themeColors = exitCode === 0 ? Model.parseThemeToml(themeColorsStdout.text) : []
+      root.themeColorsLoaded = root.themeColors.length === 4
+    }
   }
 
   function refreshEffectList() {
