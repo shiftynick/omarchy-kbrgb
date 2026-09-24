@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "shifty.kbrgb",
+  "name": "kbrgb Keyboard Lighting",
+  "version": "0.1.0",
+  "author": "Shifty",
+  "license": "MIT",
+  "description": "Native Omarchy control panel for the kbrgb ENEK5130 keyboard lighting CLI",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Keyboard Lighting",
+    "description": "Control kbrgb keyboard lighting",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}
