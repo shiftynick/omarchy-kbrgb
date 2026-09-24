@@ -21,6 +21,7 @@ Panel {
   property string statusMessage: ""
   property bool statusIsError: false
   property bool statusLoaded: false
+  property bool kbrgbMissing: false
   property string device: ""
   property string savedCommand: ""
   property string daemon: "not running"
@@ -118,9 +119,26 @@ Panel {
   }
 
   function refreshStatus() {
-    if (statusProcess.running) return
+    if (statusProcess.running || kbrgbCheckProcess.running) return
     root.loadThemeColors()
+    kbrgbCheckProcess.running = true
+  }
+
+  function kbrgbCheckOnExit(code) {
+    kbrgbMissing = code !== 0
+    if (kbrgbMissing) {
+      statusMessage = "kbrgb is not installed"
+      statusIsError = true
+      statusLoaded = true
+      return
+    }
     statusProcess.running = true
+  }
+
+  function installKbrgb() {
+    if (installProcess.running) return
+    installProcess.running = true
+    root.close()
   }
 
   function loadThemeColors() {
@@ -266,6 +284,19 @@ Panel {
     refreshEffectList()
     if (!homeProcess.running) homeProcess.running = true
     refreshStatus()
+  }
+
+  Process {
+    id: kbrgbCheckProcess
+    running: false
+    command: ["bash", "-c", "command -v kbrgb >/dev/null"]
+    onExited: function(exitCode, exitStatus) { root.kbrgbCheckOnExit(exitCode) }
+  }
+
+  Process {
+    id: installProcess
+    running: false
+    command: ["omarchy-launch-floating-terminal-with-presentation", "omarchy-pkg-aur-add kbrgb"]
   }
 
   Process {
@@ -681,6 +712,18 @@ Panel {
 
           Button {
             width: parent.width
+            visible: root.kbrgbMissing
+            text: "Install kbrgb"
+            foreground: root.barForeground
+            fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+            fontSize: Style.font.body
+            horizontalPadding: Style.space(14)
+            onClicked: root.installKbrgb()
+          }
+
+          Button {
+            width: parent.width
+            visible: !root.kbrgbMissing
             text: root.actionRunning ? "Applying…" : "Apply lighting"
             enabled: !root.actionRunning && root.deviceAvailable
             foreground: root.barForeground

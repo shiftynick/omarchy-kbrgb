@@ -5,10 +5,16 @@ A native Omarchy bar widget for the [`kbrgb`](https://github.com/shwetankg07/kbr
 ## Requirements
 
 - Omarchy with the Quattro shell
-- `kbrgb` installed and available as `kbrgb` in `PATH`
+- `kbrgb` installed and available as `kbrgb` in `PATH` (available from the AUR as `kbrgb`)
 - A keyboard/controller supported by `kbrgb`
 
-The plugin only runs `kbrgb` commands and reads their output. It requests no elevated privileges and performs no shell interpolation, and it has no second Quickshell process.
+If `kbrgb` is not found, the panel shows an **Install kbrgb** button. It opens Omarchy's standard floating install terminal running `omarchy-pkg-aur-add kbrgb`, where yay asks for your password as usual. You can also install it yourself:
+
+```bash
+omarchy-pkg-aur-add kbrgb
+```
+
+Otherwise the plugin only runs `kbrgb` commands and reads their output. It requests no elevated privileges itself, performs no shell interpolation, and has no second Quickshell process.
 
 ## Install from a Git repository
 

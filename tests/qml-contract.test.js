@@ -20,5 +20,7 @@ assert.match(panel, /onCloseRequested:\s*root\.close\(\)/, 'KeyboardPanel should
 assert.match(panel, /onExited:\s*function\(exitCode,\s*exitStatus\)/, 'Process exit handlers should use the Quickshell signal signature');
 assert.doesNotMatch(panel, /^import Quickshell$/m, 'Panel.qml does not directly use the Quickshell module');
 assert.doesNotMatch(panel, /root\.togglePanel\(\)/, 'Panel.qml should use the base lifecycle toggle function');
+assert.match(panel, /command:\s*\["omarchy-launch-floating-terminal-with-presentation",\s*"omarchy-pkg-aur-add kbrgb"\]/, 'Missing kbrgb should install through the Omarchy AUR helper');
+assert.match(panel, /visible:\s*root\.kbrgbMissing[\s\S]*onClicked:\s*root\.installKbrgb\(\)/, 'Panel should offer an install button when kbrgb is missing');
 
 console.log('QML contract tests passed');
