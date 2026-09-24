@@ -51,7 +51,7 @@ BarWidget {
     id: button
     anchors.fill: parent
     bar: root.bar
-    text: root.opened ? "󰅇" : "⌨"
+    text: "⌨"
     dimmed: !root.deviceAvailable
     tooltipText: root.deviceAvailable ? "Keyboard Lighting · kbrgb" : "Keyboard Lighting · device unavailable"
 

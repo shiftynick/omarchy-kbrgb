@@ -51,7 +51,7 @@ Panel {
 
   function optionLabel(value) {
     if (value === "theme") return "Theme colors"
-    if (value === "static") return "Static color"
+    if (value === "static") return "PRESETS"
     if (value === "off") return "Off"
     if (String(value).indexOf("native/") === 0) return "Native · " + String(value).slice(7)
     return String(value)
@@ -247,7 +247,7 @@ Panel {
   function effectOptions() {
     var list = [
       { value: "theme", label: "Theme colors" },
-      { value: "static", label: "Static color" },
+      { value: "static", label: "PRESETS" },
       { value: "off", label: "Off" }
     ]
     for (var i = 0; i < effectRows.length; i++) {
@@ -334,7 +334,7 @@ Panel {
     id: button
     anchors.fill: parent
     bar: root.bar
-    text: root.opened ? "󰅇" : "⌨"
+    text: "⌨"
     onPressed: function(mouseButton) { if (mouseButton === Qt.LeftButton) root.toggle() }
   }
 
@@ -446,7 +446,7 @@ Panel {
 
             Button {
               width: (parent.width - parent.columnSpacing * 2) / 3
-              text: "Static"
+              text: "PRESETS"
               selected: root.effect === "static"
               foreground: root.barForeground
               fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
